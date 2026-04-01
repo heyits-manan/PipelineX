@@ -1,12 +1,12 @@
-# VidFlow
+# PipelineX
 
-A scalable, distributed video processing pipeline built in Go. VidFlow is designed to handle video uploads, asynchronous processing (transcoding, thumbnail generation), and efficient delivery using a decoupled, queue-driven architecture.
+A scalable, distributed video processing pipeline built in Go. PipelineX is designed to handle video uploads, asynchronous processing (transcoding, thumbnail generation), and efficient delivery using a decoupled, queue-driven architecture.
 
 ---
 
 ## 🚀 Overview
 
-VidFlow demonstrates how to design and implement a production-style video processing system. It separates concerns across services and uses asynchronous workflows to handle compute-intensive tasks like video transcoding.
+PipelineX demonstrates how to design and implement a production-style video processing system. It separates concerns across services and uses asynchronous workflows to handle compute-intensive tasks like video transcoding.
 
 ### Key Capabilities
 
@@ -57,7 +57,7 @@ Client → API Service → Storage → Queue → Worker Service → Output Stora
 ## 📁 Project Structure
 
 ```
-video-pipeline/
+PipelineX/
 ├── cmd/
 │   ├── api/        # API service entry point
 │   ├── worker/     # Worker service entry point
@@ -117,8 +117,8 @@ video-pipeline/
 ### 1. Clone Repository
 
 ```
-git clone https://github.com/<your-username>/vidflow.git
-cd vidflow
+git clone https://github.com/<your-username>/PipelineX.git
+cd PipelineX
 ```
 
 ---
