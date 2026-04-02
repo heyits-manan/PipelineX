@@ -7,3 +7,15 @@ package main
 //
 // Suggested declarations to implement later:
 // func main()
+
+func main()
+
+func runWorker(ctx context.Context) error{
+	return nil
+}
+
+func handleVideoUploadedJob(ctx context.Context, job VideoUploadedJob) error{
+	return nil
+}
+
+
