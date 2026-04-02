@@ -61,8 +61,13 @@ func (s *MemoryVideoStore) List(ctx context.Context) ([]model.Video, error) {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 	return slices.Values(s.videos), nil
-
 }
 
 
+func (s *MemoryVideoStore) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.videos = nil
+	return nil
+}
 
