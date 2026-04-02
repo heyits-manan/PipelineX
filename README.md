@@ -10,12 +10,12 @@ PipelineX demonstrates how to design and implement a production-style video proc
 
 ### Key Capabilities
 
-* Video upload via pre-signed URLs
-* Asynchronous job processing using queues
-* Multi-resolution transcoding (e.g., 360p, 720p, 1080p)
-* Thumbnail generation
-* Scalable worker architecture
-* Pluggable storage and queue backends
+- Video upload via pre-signed URLs
+- Asynchronous job processing using queues
+- Multi-resolution transcoding (e.g., 360p, 720p, 1080p)
+- Thumbnail generation
+- Scalable worker architecture
+- Pluggable storage and queue backends
 
 ---
 
@@ -27,30 +27,25 @@ Client → API Service → Storage → Queue → Worker Service → Output Stora
 
 ### Components
 
-* **API Service**
+- **API Service**
+  - Handles client requests
+  - Generates upload URLs
+  - Publishes processing jobs
 
-  * Handles client requests
-  * Generates upload URLs
-  * Publishes processing jobs
+- **Worker Service**
+  - Consumes jobs from queue
+  - Runs video processing (FFmpeg)
+  - Uploads processed outputs
 
-* **Worker Service**
+- **Storage Layer**
+  - Stores raw and processed video assets
 
-  * Consumes jobs from queue
-  * Runs video processing (FFmpeg)
-  * Uploads processed outputs
+- **Queue**
+  - Decouples upload from processing
+  - Enables scalability and retries
 
-* **Storage Layer**
-
-  * Stores raw and processed video assets
-
-* **Queue**
-
-  * Decouples upload from processing
-  * Enables scalability and retries
-
-* **Database**
-
-  * Tracks video metadata and processing status
+- **Database**
+  - Tracks video metadata and processing status
 
 ---
 
@@ -94,13 +89,13 @@ PipelineX/
 
 ## 🧱 Tech Stack
 
-* **Language**: Go
-* **Video Processing**: FFmpeg
-* **Storage**: S3-compatible object storage
-* **Queue**: SQS / Kafka (pluggable)
-* **Database**: PostgreSQL
-* **Containerization**: Docker
-* **Orchestration (optional)**: Kubernetes
+- **Language**: Go
+- **Video Processing**: FFmpeg
+- **Storage**: S3-compatible object storage
+- **Queue**: SQS / Kafka (pluggable)
+- **Database**: PostgreSQL
+- **Containerization**: Docker
+- **Orchestration (optional)**: Kubernetes
 
 ---
 
@@ -108,16 +103,16 @@ PipelineX/
 
 ### Prerequisites
 
-* Go 1.20+
-* FFmpeg installed
-* Docker (optional)
+- Go 1.20+
+- FFmpeg installed
+- Docker (optional)
 
 ---
 
 ### 1. Clone Repository
 
 ```
-git clone https://github.com/<your-username>/PipelineX.git
+git clone https://github.com/heyits-manan/PipelineX.git
 cd PipelineX
 ```
 
@@ -141,38 +136,38 @@ go run cmd/worker/main.go
 
 ### 4. Upload a Video
 
-* Call API to generate upload URL
-* Upload video using the URL
-* Worker will automatically process it
+- Call API to generate upload URL
+- Upload video using the URL
+- Worker will automatically process it
 
 ---
 
 ## 📌 Design Principles
 
-* **Separation of concerns**: API and worker are independent
-* **Asynchronous processing**: Improves scalability and reliability
-* **Interface-driven design**: Enables easy swapping of components
-* **Horizontal scalability**: Workers scale independently
-* **Fault tolerance**: Queue-based retries and decoupling
+- **Separation of concerns**: API and worker are independent
+- **Asynchronous processing**: Improves scalability and reliability
+- **Interface-driven design**: Enables easy swapping of components
+- **Horizontal scalability**: Workers scale independently
+- **Fault tolerance**: Queue-based retries and decoupling
 
 ---
 
 ## ⚠️ Known Limitations (MVP)
 
-* No authentication/authorization
-* Limited error handling and retries
-* No monitoring or observability yet
-* Single-region deployment
+- No authentication/authorization
+- Limited error handling and retries
+- No monitoring or observability yet
+- Single-region deployment
 
 ---
 
 ## 🔮 Future Improvements
 
-* Adaptive bitrate streaming (HLS/DASH)
-* GPU-accelerated transcoding
-* Distributed tracing and metrics
-* Multi-region deployment
-* AI-based video analysis (captions, moderation)
+- Adaptive bitrate streaming (HLS/DASH)
+- GPU-accelerated transcoding
+- Distributed tracing and metrics
+- Multi-region deployment
+- AI-based video analysis (captions, moderation)
 
 ---
 
