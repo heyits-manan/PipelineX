@@ -1,6 +1,6 @@
 # PipelineX
 
-A scalable, distributed video processing pipeline built in Go. PipelineX is designed to handle video uploads, asynchronous processing (transcoding, thumbnail generation), and efficient delivery using a decoupled, queue-driven architecture.
+A scalable, distributed video processing pipeline built in Go. PipelineX is designed around a Redis-first architecture for metadata, job queues, and processing status updates.
 
 ---
 
@@ -10,42 +10,37 @@ PipelineX demonstrates how to design and implement a production-style video proc
 
 ### Key Capabilities
 
-- Video upload via pre-signed URLs
-- Asynchronous job processing using queues
+- Video registration via API
+- Asynchronous job processing using Redis queues/streams
 - Multi-resolution transcoding (e.g., 360p, 720p, 1080p)
 - Thumbnail generation
 - Scalable worker architecture
-- Pluggable storage and queue backends
+- Redis-backed metadata and status tracking
 
 ---
 
 ## 🏗 Architecture
 
 ```
-Client → API Service → Storage → Queue → Worker Service → Output Storage → CDN
+Client → API Service → Redis (metadata + queue) → Worker Service → Redis (status updates)
 ```
 
 ### Components
 
 - **API Service**
   - Handles client requests
-  - Generates upload URLs
-  - Publishes processing jobs
+  - Registers videos and metadata
+  - Publishes processing jobs to Redis
 
 - **Worker Service**
-  - Consumes jobs from queue
+  - Consumes jobs from Redis
   - Runs video processing (FFmpeg)
-  - Uploads processed outputs
+  - Updates processing status back to Redis
 
-- **Storage Layer**
-  - Stores raw and processed video assets
-
-- **Queue**
-  - Decouples upload from processing
+- **Redis**
+  - Stores video metadata and processing state
+  - Provides queue/stream primitives for async job handling
   - Enables scalability and retries
-
-- **Database**
-  - Tracks video metadata and processing status
 
 ---
 
@@ -58,13 +53,12 @@ PipelineX/
 │   ├── worker/     # Worker service entry point
 │
 ├── internal/
-│   ├── api/        # HTTP handlers and services
-│   ├── worker/     # Worker and processing logic
-│   ├── storage/    # Storage abstraction (S3/local)
-│   ├── queue/      # Queue abstraction (SQS/Kafka)
-│   ├── ffmpeg/     # Video processing logic
-│   ├── db/         # Database access layer
-│   ├── models/     # Shared data models
+│   ├── video/      # Video domain models, handlers, and service logic
+│   ├── queue/      # Queue contracts and Redis-backed queue implementation
+│   ├── store/      # Redis-backed video metadata/status store
+│   ├── processor/  # Worker processor and transcoder abstraction
+│   ├── ffmpeg/     # FFmpeg integration and command wrappers
+│   ├── config/     # Shared application configuration
 │
 ├── configs/        # Configuration files
 ├── deployments/    # Docker / Kubernetes configs
@@ -76,14 +70,13 @@ PipelineX/
 
 ## 🔄 Data Flow
 
-1. Client requests upload URL from API
-2. Client uploads video directly to storage
-3. API enqueues a processing job
-4. Worker consumes job from queue
-5. Worker downloads video and processes it
-6. Processed outputs are uploaded to storage
-7. Database is updated with status and metadata
-8. CDN serves processed video
+1. Client sends a create/register video request to API
+2. API stores initial video metadata in Redis (`uploaded`)
+3. API enqueues a processing job in Redis
+4. Worker consumes the job from Redis
+5. Worker processes video (FFmpeg/fake transcoder)
+6. Worker updates Redis with final status (`ready`/`failed`) and metadata
+7. Client fetches current status from API
 
 ---
 
@@ -91,9 +84,8 @@ PipelineX/
 
 - **Language**: Go
 - **Video Processing**: FFmpeg
-- **Storage**: S3-compatible object storage
-- **Queue**: SQS / Kafka (pluggable)
-- **Database**: PostgreSQL
+- **Metadata Store**: Redis
+- **Queue**: Redis (Streams or Lists)
 - **Containerization**: Docker
 - **Orchestration (optional)**: Kubernetes
 
@@ -104,6 +96,7 @@ PipelineX/
 ### Prerequisites
 
 - Go 1.20+
+- Redis 7+
 - FFmpeg installed
 - Docker (optional)
 
@@ -118,7 +111,15 @@ cd PipelineX
 
 ---
 
-### 2. Run API Service
+### 2. Start Redis (if not already running)
+
+```
+docker run --name pipelinex-redis -p 6379:6379 -d redis:7
+```
+
+---
+
+### 3. Run API Service
 
 ```
 go run cmd/api/main.go
@@ -126,7 +127,7 @@ go run cmd/api/main.go
 
 ---
 
-### 3. Run Worker Service
+### 4. Run Worker Service
 
 ```
 go run cmd/worker/main.go
@@ -134,11 +135,11 @@ go run cmd/worker/main.go
 
 ---
 
-### 4. Upload a Video
+### 5. Create a Video Job
 
-- Call API to generate upload URL
-- Upload video using the URL
-- Worker will automatically process it
+- Call API to register a video
+- API will enqueue a Redis job
+- Worker will automatically process it and update status in Redis
 
 ---
 
@@ -148,7 +149,7 @@ go run cmd/worker/main.go
 - **Asynchronous processing**: Improves scalability and reliability
 - **Interface-driven design**: Enables easy swapping of components
 - **Horizontal scalability**: Workers scale independently
-- **Fault tolerance**: Queue-based retries and decoupling
+- **Fault tolerance**: Redis-backed queue retries and decoupling
 
 ---
 
@@ -158,6 +159,7 @@ go run cmd/worker/main.go
 - Limited error handling and retries
 - No monitoring or observability yet
 - Single-region deployment
+- Redis is a single dependency and potential bottleneck in the current MVP
 
 ---
 

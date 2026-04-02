@@ -3,6 +3,7 @@ package video
 import "context"
 import "sync"
 import "github.com/heyits-manan/PipelineX.git/internal/video/model"
+import "slices"
 
 // TODO: Define the persistence contract for videos.
 // TODO: Keep this interface small and tied to actual use cases.
@@ -36,3 +37,32 @@ func (s *MemoryVideoStore) Create(ctx context.Context, video model.Video) error{
 	s.videos[video.ID] = video
 	return nil
 }
+
+
+func (s *MemoryVideoStore) GetByID(ctx context.Context, id string) (model.Video, error) {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	video, ok := s.videos[id]
+	if !ok {
+		return model.Video{}, fmt.Errorf("video not found")
+	}
+	return video, nil
+}
+
+
+func (s *MemoryVideoStore) UpdateStatus(ctx context.Context, input model.UpdateVideoStatusInput) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.videos[input.VideoID].Status = input.Status
+	return nil
+}
+
+func (s *MemoryVideoStore) List(ctx context.Context) ([]model.Video, error) {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	return slices.Values(s.videos), nil
+
+}
+
+
+
