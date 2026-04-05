@@ -1,8 +1,9 @@
 package video
 
-import "context"
-import "errors"
-import "time"
+import (
+	"context"
+	"time"
+)
 
 type IDGenerator interface {
 	NewID() string
@@ -21,17 +22,17 @@ type Service struct {
 func NewService(store Store, ids IDGenerator, jobs JobPublisher) *Service {
 	return &Service{
 		store: store,
-		ids: ids,
-		jobs: jobs
+		ids:   ids,
+		jobs:  jobs,
 	}
 }
 
-func (s *Service) CreateVideo(ctx context.Context, input CreateVideoInput) (Video, error){
-	if input.Filename == ""{
-		return Video{}, errors.New("filename is required")
+func (s *Service) CreateVideo(ctx context.Context, input CreateVideoInput) (Video, error) {
+	if input.Filename == "" {
+		return Video{}, ErrInvalidInput
 	}
 
-	now := time.now()
+	now := time.Now()
 	video := Video{
 		ID:        s.ids.NewID(),
 		Filename:  input.Filename,
@@ -40,40 +41,40 @@ func (s *Service) CreateVideo(ctx context.Context, input CreateVideoInput) (Vide
 		UpdatedAt: now,
 	}
 
-	if err := s.store.Create(ctx, video); err != nil{
+	if err := s.store.Create(ctx, video); err != nil {
 		return Video{}, err
 	}
 
-	if s.jobs != nil{
-		if err := s.jobs.PublishVideoUploaded(ctx, video); err != nil{
+	if s.jobs != nil {
+		if err := s.jobs.PublishVideoUploaded(ctx, video); err != nil {
 			return Video{}, err
 		}
 	}
+
 	return video, nil
 }
 
-func (s *Service) GetVideo(ctx context.Context, id string) (Video, error){
-	if id == ""{
-		return Video{}, errors.New("video id is required")
+func (s *Service) GetVideo(ctx context.Context, id string) (Video, error) {
+	if id == "" {
+		return Video{}, ErrInvalidInput
 	}
+
 	video, err := s.store.GetByID(ctx, id)
-	if err != nil{
+	if err != nil {
 		return Video{}, err
 	}
 
 	return video, nil
-
 }
 
-func (s *Service) ListVideos(ctx context.Context) ([]Video, error){
-		videos, err := s.store.ListVideos(ctx)
+func (s *Service) ListVideos(ctx context.Context) ([]Video, error) {
+	videos, err := s.store.List(ctx)
+	if err != nil {
+		return nil, err
+	}
 
-		if err != nil{
-			return nil, err
-		}
-
-		return videos, nil
-}	
+	return videos, nil
+}
 
 // func (s *Service) MarkProcessing(ctx context.Context, input UpdateVideoStatusInput) error{
 
@@ -87,4 +88,3 @@ func (s *Service) ListVideos(ctx context.Context) ([]Video, error){
 // func (s *Service) MarkFailed(ctx context.Context, input UpdateVideoStatusInput) error{
 
 // }
-

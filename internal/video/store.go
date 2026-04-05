@@ -29,6 +29,11 @@ func NewMemoryVideoStore() *MemoryVideoStore {
 func (s *MemoryVideoStore) Create(ctx context.Context, video Video) error{
 	s.mu.Lock()
 	defer s.mu.Unlock()
+
+	if _, exists := s.videos[video.ID]; exists {
+		return ErrConflict
+	}
+
 	s.videos[video.ID] = video
 	return nil
 }
@@ -39,7 +44,7 @@ func (s *MemoryVideoStore) GetByID(ctx context.Context, id string) (Video, error
 	defer s.mu.RUnlock()
 	video, ok := s.videos[id]
 	if !ok {
-		return Video{}, fmt.Errorf("video not found")
+		return Video{}, ErrNotFound
 	}
 	return video, nil
 }
@@ -48,7 +53,15 @@ func (s *MemoryVideoStore) GetByID(ctx context.Context, id string) (Video, error
 func (s *MemoryVideoStore) UpdateStatus(ctx context.Context, input UpdateVideoStatusInput) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	s.videos[input.VideoID].Status = input.Status
+
+	video, ok := s.videos[input.VideoID]
+	if !ok {
+		return ErrNotFound
+	}
+
+	video.Status = input.Status
+	s.videos[input.VideoID] = video
+
 	return nil
 }
 
@@ -65,4 +78,3 @@ func (s *MemoryVideoStore) Close() error {
 	s.videos = nil
 	return nil
 }
-
