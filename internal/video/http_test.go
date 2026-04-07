@@ -1,4 +1,4 @@
-package video
+package video_test
 
 import (
 	"bytes"
@@ -8,6 +8,9 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	memorystore "github.com/heyits-manan/PipelineX.git/internal/store"
+	video "github.com/heyits-manan/PipelineX.git/internal/video"
 )
 
 type fakeIDGenerator struct {
@@ -22,10 +25,10 @@ func (g *fakeIDGenerator) NewID() string {
 func setupHTTPHandler(t *testing.T) *http.ServeMux {
 	t.Helper()
 
-	store := NewMemoryVideoStore()
 	ids := &fakeIDGenerator{}
-	service := NewService(store, ids, nil)
-	handler := NewHandler(service)
+	videoStore := memorystore.NewMemoryVideoStore()
+	service := video.NewService(videoStore, ids, nil)
+	handler := video.NewHandler(service)
 
 	mux := http.NewServeMux()
 	handler.RegisterRoutes(mux)
@@ -52,7 +55,7 @@ func TestCreateVideo_Success(t *testing.T) {
 		t.Fatalf("expected status %d, got %d, body=%s", http.StatusCreated, rec.Code, rec.Body.String())
 	}
 
-	var got VideoResponse
+	var got video.VideoResponse
 	if err := json.Unmarshal(rec.Body.Bytes(), &got); err != nil {
 		t.Fatalf("failed to unmarshal response: %v", err)
 	}
@@ -63,8 +66,8 @@ func TestCreateVideo_Success(t *testing.T) {
 	if got.Filename != "clip.mp4" {
 		t.Fatalf("expected filename clip.mp4, got %q", got.Filename)
 	}
-	if got.Status != string(StatusUploaded) {
-		t.Fatalf("expected status %q, got %q", StatusUploaded, got.Status)
+	if got.Status != string(video.StatusUploaded) {
+		t.Fatalf("expected status %q, got %q", video.StatusUploaded, got.Status)
 	}
 }
 
@@ -98,9 +101,8 @@ func TestGetVideo_NotFound(t *testing.T) {
 func TestListVideos_Success(t *testing.T) {
 	mux := setupHTTPHandler(t)
 
-	// Seed by hitting the create endpoint twice.
 	create := func(filename string) {
-		payload, _ := json.Marshal(CreateVideoRequest{
+		payload, _ := json.Marshal(video.CreateVideoRequest{
 			Filename: filename,
 		})
 		req := httptest.NewRequest(http.MethodPost, "/videos", bytes.NewReader(payload))
@@ -124,7 +126,7 @@ func TestListVideos_Success(t *testing.T) {
 		t.Fatalf("expected status %d, got %d, body=%s", http.StatusOK, rec.Code, rec.Body.String())
 	}
 
-	var got []VideoResponse
+	var got []video.VideoResponse
 	if err := json.Unmarshal(rec.Body.Bytes(), &got); err != nil {
 		t.Fatalf("failed to unmarshal list response: %v", err)
 	}
