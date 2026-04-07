@@ -8,12 +8,6 @@ import "fmt"
 
 type StorageBackend string
 type QueueBackend string
-type DatabaseDriver string
-type DatabaseHost string
-type DatabasePort int
-type DatabaseUser string
-type DatabasePassword string
-type DatabaseName string
 
 type Config struct {
 	// TODO: Add fields for app and infrastructure configuration.
@@ -21,13 +15,7 @@ type Config struct {
 	Environment string
 	StorageBackend string
 	QueueBackend string
-	DatabaseDSN string
-	DatabaseDriver string
-	DatabaseHost string
-	DatabasePort int
-	DatabaseUser string
-	DatabasePassword string
-	DatabaseName string
+
 }
 
 func Load() (Config, error) {
@@ -36,13 +24,6 @@ func Load() (Config, error) {
 		Environment: "development",
 		StorageBackend: "local",
 		QueueBackend: "local",
-		DatabaseDSN: "postgres://postgres:postgres@localhost:5432/postgres",
-		DatabaseDriver: "postgres",
-		DatabaseHost: "localhost",
-		DatabasePort: 5432,
-		DatabaseUser: "postgres",
-		DatabasePassword: "postgres",
-		DatabaseName: "postgres",
 	}, nil
 }
 

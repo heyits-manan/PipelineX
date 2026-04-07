@@ -1,10 +1,9 @@
 package video
 
-// import "net/http"
-
-// TODO: This file should contain HTTP transport code only.
-// TODO: Parse requests, call service methods, and write JSON responses.
-// TODO: Do not put domain logic directly in handlers.
+import "net/http"
+import "encoding/json"
+import "strings"
+import "errors"
 
 type Handler struct {
 	service *Service
@@ -17,9 +16,19 @@ type CreateVideoRequest struct {
 type VideoResponse struct {
 	ID     string `json:"id"`
 	Status string `json:"status"`
-
+	Filename string `json: "filename"`
 	// TODO: Add fields that should be returned to clients.
 }
+
+type CreateVideoRequest struct {
+	Filename string `json:"filename"`
+}
+
+func NewHandler(service *Service) *Handler{
+	return &Handler{service: service}
+}
+
+
 
 // Suggested declarations to implement later:
 // func NewHandler(service *Service) *Handler

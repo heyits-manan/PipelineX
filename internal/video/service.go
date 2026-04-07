@@ -22,16 +22,16 @@ func NewService(store Store, ids IDGenerator, jobs JobPublisher) *Service {
 	return &Service{
 		store: store,
 		ids: ids,
-		jobs: jobs
+		jobs: jobs,
 	}
 }
 
-func (s *Service) CreateVideo(ctx context.Context, input CreateVideoInput) (Video, error){
+func (s *Service) CreateVideo(ctx context.Context, input *CreateVideoInput) (Video, error){
 	if input.Filename == ""{
 		return Video{}, errors.New("filename is required")
 	}
 
-	now := time.now()
+	now := time.Now()
 	video := Video{
 		ID:        s.ids.NewID(),
 		Filename:  input.Filename,
@@ -66,13 +66,13 @@ func (s *Service) GetVideo(ctx context.Context, id string) (Video, error){
 }
 
 func (s *Service) ListVideos(ctx context.Context) ([]Video, error){
-		videos, err := s.store.ListVideos(ctx)
+	videos, err := s.store.ListVideos(ctx)
 
-		if err != nil{
-			return nil, err
-		}
+	if err != nil{
+		return nil, err
+	}
 
-		return videos, nil
+	return videos, nil
 }	
 
 // func (s *Service) MarkProcessing(ctx context.Context, input UpdateVideoStatusInput) error{

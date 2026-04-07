@@ -3,6 +3,7 @@ package video
 import "context"
 import "sync"
 import "slices"
+import "fmt"
 
 type Store interface {
 	Create(ctx context.Context, video Video) error
@@ -45,7 +46,7 @@ func (s *MemoryVideoStore) GetByID(ctx context.Context, id string) (Video, error
 }
 
 
-func (s *MemoryVideoStore) UpdateStatus(ctx context.Context, input UpdateVideoStatusInput) error {
+func (s *MemoryVideoStore) UpdateStatus(ctx context.Context, input *UpdateVideoStatusInput) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	s.videos[input.VideoID].Status = input.Status
@@ -55,7 +56,11 @@ func (s *MemoryVideoStore) UpdateStatus(ctx context.Context, input UpdateVideoSt
 func (s *MemoryVideoStore) List(ctx context.Context) ([]Video, error) {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
-	return slices.Values(s.videos), nil
+	out: = make([]Video, 0, len(s.videos))
+	for _, v := range s.videos {
+		out = append(out, v)
+	}
+	return out, nil
 }
 
 
