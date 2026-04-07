@@ -8,14 +8,18 @@ package main
 // Suggested declarations to implement later:
 // func main()
 
+import (
+	"context"
+
+	"github.com/heyits-manan/PipelineX.git/internal/queue"
+)
+
 func main()
 
-func runWorker(ctx context.Context) error{
+func runWorker(ctx context.Context) error {
 	return nil
 }
 
-func handleVideoUploadedJob(ctx context.Context, job VideoUploadedJob) error{
+func handleVideoUploadedJob(ctx context.Context, job queue.VideoUploadedJob) error {
 	return nil
 }
-
-

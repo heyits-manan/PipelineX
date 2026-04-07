@@ -10,6 +10,7 @@ import (
 
 	"github.com/heyits-manan/PipelineX.git/internal/config"
 	"github.com/heyits-manan/PipelineX.git/internal/queue"
+	"github.com/heyits-manan/PipelineX.git/internal/store"
 	"github.com/heyits-manan/PipelineX.git/internal/video"
 	"github.com/redis/go-redis/v9"
 )
@@ -49,7 +50,7 @@ func main() {
 }
 
 func runHTTP(ctx context.Context, cfg config.Config, mux *http.ServeMux) error {
-	store := video.NewMemoryVideoStore()
+	store := store.NewMemoryVideoStore()
 	ids := &randomIDGenerator{}
 	rdb := redis.NewClient(&redis.Options{
 		Addr: "localhost:6379", // replace with cfg later
