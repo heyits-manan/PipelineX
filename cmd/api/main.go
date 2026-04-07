@@ -9,7 +9,9 @@ import (
 	"net/http"
 
 	"github.com/heyits-manan/PipelineX.git/internal/config"
+	"github.com/heyits-manan/PipelineX.git/internal/queue"
 	"github.com/heyits-manan/PipelineX.git/internal/video"
+	"github.com/redis/go-redis/v9"
 )
 
 type randomIDGenerator struct{}
@@ -47,13 +49,18 @@ func main() {
 }
 
 func runHTTP(ctx context.Context, cfg config.Config, mux *http.ServeMux) error {
-	_ = ctx
-
 	store := video.NewMemoryVideoStore()
 	ids := &randomIDGenerator{}
-	service := video.NewService(store, ids, nil)
+	rdb := redis.NewClient(&redis.Options{
+		Addr: "localhost:6379", // replace with cfg later
+	})
+	if err := rdb.Ping(ctx).Err(); err != nil {
+		return err
+	}
+	redisQueue := queue.NewRedisQueue(rdb)
+	jobs := video.NewQueueJobPublisher(redisQueue)
+	service := video.NewService(store, ids, jobs)
 	handler := video.NewHandler(service)
 	handler.RegisterRoutes(mux)
-
 	return nil
 }
